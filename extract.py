@@ -22,6 +22,7 @@ from utils import (
     parse_incoterm,
     parse_weight_kg,
 )
+from prompts import BASE_PROMPT
 
 try:
     from groq import Groq
@@ -107,7 +108,7 @@ def main(mock: bool = False):
                 raw = rule_extract(email, name_index, code_to_name)
             else:
                 # build prompt (simple for now) and call LLM
-                prompt = f"{email.get('subject')}\n\n{email.get('body')}\n\n{''}"
+                prompt = f"{BASE_PROMPT}\n\nEmail Subject: {email.get('subject')}\n\nEmail Body: {email.get('body')}\n\nReturn only a valid JSON object with no extra text."
                 llm_resp = call_llm(prompt, retries=int(os.getenv("MAX_RETRIES", 3)), temperature=float(os.getenv("GROQ_TEMPERATURE", 0)))
                 if llm_resp:
                     # Try to parse JSON block from response
@@ -124,7 +125,7 @@ def main(mock: bool = False):
 
             # Validate and normalize through Pydantic
             validated = ExtractionResult(**raw)
-            outputs.append(validated.dict())
+            outputs.append(validated.model_dump())
         except Exception as e:
             logger.exception("Failed to extract for email %s: %s", email.get("id"), e)
             # Per README: include record with nulls on failure

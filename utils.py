@@ -115,7 +115,7 @@ def detect_dangerous(text: str) -> bool:
     for n in negatives:
         if n in txt:
             return False
-    keywords = ["dg", "dangerous", "hazardous", "class \d", "imo", "imdg"]
+    keywords = ["dg", "dangerous", "hazardous", r"class \d", "imo", "imdg"]
     for k in keywords:
         if re.search(k, txt):
             return True
